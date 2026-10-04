@@ -53,8 +53,9 @@ def main():
     print("PASS: editor layout has 47 ordered keys, correct widths and no overlaps")
 
     keymap = text(ROOT / "config/circa50.keymap")
-    layers = re.findall(r"bindings\s*=\s*<([^>]+)>;", keymap)
-    assert len(layers) == 3
+    # combos も bindings を持つため、keymap ノード以降のレイヤーだけを数える。
+    layers = re.findall(r"bindings\s*=\s*<([^>]+)>;", keymap.split('"zmk,keymap"', 1)[1])
+    assert layers
     for layer in layers:
         assert len(re.findall(r"&\w+", layer)) == 47
     for side, name in [("L", "left"), ("R", "right")]:
@@ -72,7 +73,7 @@ def main():
     assert "NRF_PSEL(SPIM_SCK, 1, 3)" in right
     assert "NRF_PSEL(SPIM_MOSI, 1, 7)" in right and "NRF_PSEL(SPIM_MISO, 1, 7)" in right
     assert not set(PINS["R"]["row"] + PINS["R"]["col"]) & {(1, 3), (1, 5), (1, 7), (1, 15)}
-    print("PASS: 47 unique matrix positions, 3 x 47 bindings, GPIOs, sensor pins")
+    print(f"PASS: 47 unique matrix positions, {len(layers)} x 47 bindings, GPIOs, sensor pins")
 
     if args.pcb:
         import pcbnew

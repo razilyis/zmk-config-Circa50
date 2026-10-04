@@ -1,38 +1,73 @@
 # Circa50 — ZMK config
 
-Circa50専用のZMK設定です。KiCadデータは変更していません。
+分割キーボード Circa50 用の [ZMK](https://zmk.dev/) ファームウェア設定です。
 
-## 構成
+## 仕様
 
-- XIAO nRF52840 **Plus** × 2。ZMKのビルドターゲットは `xiao_ble//zmk`。
-- 左24キー（子機）、右23キー（親機）、合計47キー。SW47 / SW48は電源スイッチなのでキーに含めません。
-- 左右間はBluetooth接続。PCには**右側**をUSBまたはBluetoothで接続します。
-- 右側PAW3222、760 CPI。センサーを置くための空間に架空のキーは作成していません。
-- 後からPCBに追加された実在のSW49（1.5u）はキーとして含めています。
-- 17mmピッチ・実際のPCB上の並び順に対応。電気的には左右とも4行×6列です。
-- 標準ZMK構成です。DYA Studio / ZMK Studio対応は今回含めていません。
+- コントローラー: Seeed XIAO nRF52840 **Plus** × 2（ビルドターゲット `xiao_ble//zmk`）
+- キー数: 47（左24キー / 右23キー）、17mmピッチ
+- 左右分割、無線（Bluetooth）接続
+  - **右側がセントラル**です。PCには右側をUSBまたはBluetoothで接続します。
+  - 左側はペリフェラルで、右側と接続します。
+- トラックボール: 右側に PAW3222 センサー（760 CPI）
+- ディープスリープ: 15分無操作で移行。キーを押すと復帰します。
 
-## 現在の検証状況
+## ファームウェアの入手
 
-GPIO、ダイオード方向、47キーの行列と順序を元PCB・回路図のMCU接続に照合しています。
-**コンパイル・UF2生成・実機動作確認は未実施**です。ビルド環境は含みません。
-GitHub Actionsを実行してから書き込んでください。GitHubへのアップロードは行っていません。
-センサーの軸方向はケース内の取り付け方向に依存するため、実機で確認・調整してください。
+1. このリポジトリを Fork します。
+2. GitHub の **Actions** タブで `Build Circa50` を実行します（push でも自動実行されます）。
+3. 完了後、Artifacts の `firmware` をダウンロードして展開します。
 
-## ビルドと書き込み
+| ファイル | 用途 |
+|---|---|
+| `Circa50-left.uf2` | 左側用 |
+| `Circa50-right.uf2` | 右側用 |
+| `Circa50-settings-reset.uf2` | ペアリング情報などの設定リセット用 |
+| `Circa50-left-usb-logging.uf2` / `Circa50-right-usb-logging.uf2` | 不具合調査用のログ出力版 |
 
-1. このディレクトリの内容をGitHubのリポジトリ直下に配置します（親ディレクトリで包まない）。
-2. Actionsの `Build Circa50` を実行します。
-3. 成功後、Artifactsの `firmware` をダウンロードします。
-4. XIAOのリセットを素早く2回押してUF2ドライブを表示します。
-5. 左に `Circa50-left.uf2`、右に `Circa50-right.uf2` をコピーします。
+## 書き込み
 
-左右を同じ設定バージョンで書き込んでください。
-左右ペアリングが不調な場合のみ、`Circa50-settings-reset.uf2` を**左右両方**に書き込み、
-その後それぞれの通常ファームウェアを書き直します。設定リセットはペアリング情報等を消去します。
-PC側の古い登録も削除して、右側の `Circa50` を再登録します。
+1. XIAO をUSBでPCに接続し、リセットボタンを素早く2回押します。
+2. `XIAO-SENSE` などの名前のドライブが表示されます。
+3. 左側には `Circa50-left.uf2`、右側には `Circa50-right.uf2` をコピーします。
 
-既存のLinux / WSL / Docker等のZMKビルド環境では、このリポジトリ直下で次を実行します。
+左右は必ず同じバージョンのファームウェアを書き込んでください。
+
+### 左右がつながらない / ペアリングをやり直したいとき
+
+1. `Circa50-settings-reset.uf2` を**左右両方**に書き込みます。
+2. それぞれに通常のファームウェアを書き込み直します。
+3. PC側に古い `Circa50` の登録があれば削除し、再度ペアリングします。
+
+設定リセットを行うと、保存されているペアリング情報はすべて消去されます。
+
+## キーマップ
+
+キーマップは [`config/circa50.keymap`](config/circa50.keymap) で定義しています。
+OSのキーボード配列はUS配列を想定しています。
+
+### Keymap Editor
+
+[ZMK Keymap Editor](https://nickcoutsos.github.io/keymap-editor/) で編集できます。
+[`config/circa50.json`](config/circa50.json) に実機と同じキー配置のレイアウトを定義しているため、
+エディター上でも実機どおりの並びで表示されます。
+
+### オートマウスレイヤー
+
+トラックボールを動かすと、クリック用のマウスレイヤーに自動で切り替わります。
+
+- ボールの動きが止まってから 500ms 後に元のレイヤーへ戻ります。
+- マウスレイヤーでは J / K / L の位置が左クリック / 中クリック / 右クリックになります。
+- クリック以外のキーを押すと、その時点でマウスレイヤーを抜けます。
+- タイピング直後（150ms以内）はボールに触れても切り替わりません。
+
+戻るまでの時間は [`circa50_right.overlay`](config/boards/shields/circa50/circa50_right.overlay) の
+`input-processors = <&zip_temp_layer 3 500>;` の `500`（ミリ秒）で調整できます。
+
+## ローカルでビルドする
+
+ZMK のビルド環境（[公式ドキュメント](https://zmk.dev/docs/development/local-toolchain/setup)）がある場合は、
+このリポジトリ直下で次を実行します。
 
 ```sh
 west init -l config
@@ -42,80 +77,35 @@ west build -s zmk/app -d build/left -b xiao_ble//zmk -- -DZMK_CONFIG="$PWD/confi
 west build -s zmk/app -d build/right -b xiao_ble//zmk -- -DZMK_CONFIG="$PWD/config" -DSHIELD=circa50_right
 ```
 
-## USBログ版（診断用）
+## USBログ版（不具合調査用）
 
-通常版・settings-reset版に加えて、同じActionsで次の2つを生成します。
+`*-usb-logging.uf2` は、USBシリアル経由で動作ログを出力する診断用ファームウェアです。
+キー入力・左右間通信・トラックボールの状態を確認できます。
+ログは書き込んだ側のUSB接続から取得します。トラックボールを調べる場合は右側に書き込んでください。
 
-- `Circa50-left-usb-logging.uf2`：左側のキー走査・左右間通信のログ。
-- `Circa50-right-usb-logging.uf2`：右側のキー走査・接続状態・PAW3222のエラーや移動量のログ。
+1. 調べたい側にログ版を書き込み、データ通信対応のUSBケーブルでPCに接続します。
+2. シリアルポートをシリアル端末で開きます。
+   - Windows: デバイスマネージャーの「ポート（COMとLPT）」でCOM番号を確認し、PuTTY / Tera Term などで開きます。
+   - macOS / Linux: `/dev/cu.usbmodem*` / `/dev/ttyACM*` を `screen` などで開きます。
+3. ログは起動から約8秒後に出力が始まります。問題の操作を再現してログを保存します。
 
-通常版と同じGPIO・キーマップ・ペアリング領域を使います。ログ版だけ、公式の
-`zmk-usb-logging` snippet、ZMK DEBUGレベル、16KiBログバッファ、出力開始8秒遅延、
-MCUディープスリープ無効を指定しています。PAW3222ドライバ自体は変更していません。
-通常版の省電力設定はそのままです。ログ版ではスリープ復帰の再現試験はできません。
+トラックボールに関しては、`paw32xx` の `Invalid product id` などのエラーや、
+ボールを動かしたときの `x=... y=...` が確認ポイントです。
 
-### Windowsでログを取得する
+> [!CAUTION]
+> ログにはキー入力の情報が含まれます。取得中にパスワードなどを入力しないでください。
+> また、ログを共有する前に内容を確認してください。
 
-1. Actions成功後に `firmware` をダウンロードし、調べたい側に対応するログ版UF2を書き込みます。
-   PAW3222の調査なら右側だけログ版にすればよく、左側は通常版でも構いません。
-2. その側のXIAOをデータ通信対応USBケーブルでPCに接続します。
-3. デバイスマネージャーの「ポート（COMとLPT）」で追加されたCOM番号を確認します。
-4. PuTTY / Tera Termなどのシリアル端末でそのCOMポートを開きます。
-   設定目安は115200 bps、8 bit、パリティなし、ストップ1、フロー制御なしです。
-5. 端末のログ保存を開始し、キー入力・ボール移動など問題の操作を再現します。
+ログ版はスリープが無効で消費電力が大きいため、調査が終わったら通常版に戻してください
+（settings-reset の書き込みは不要です）。
 
-起動時のログを調べる場合は、端末を準備してからリセットを**1回**押し、COMポートが
-戻ったら速やかに再接続します（2回押すとUF2ブートローダーになります）。
-ログ出力は起動から約8秒後に始まります。接続タイミングやバッファの上限によっては、
-すべての起動ログを保存できるとは限りません。
+参考: [ZMK USB Logging](https://zmk.dev/docs/development/usb-logging)
 
-右側では `paw32xx` の `Invalid product id` / `Device configuration failed` 等のエラーや、
-ボール移動時の `x=... y=...` が確認対象です。成功時に必ず初期化完了メッセージが出るとは限りません。
-左右それぞれのログは、その側のUSB接続から取得します。左側ログが右側へ転送されるわけではありません。
+## ハードウェア情報
 
-ログにはキー位置や入力に関する情報が含まれることがあります。取得中はパスワード等を入力せず、
-共有前に内容を確認してください。ログ版は消費電力と処理負荷が増えるため、診断後は通常版へ戻してください。
-切り替えだけなら通常はsettings-resetを書き込む必要はありません。
+### 配線（nRF GPIO）
 
-参考：[ZMK公式 USB Logging](https://zmk.dev/docs/development/usb-logging)
-
-## 初期キーマップ
-
-### Keymap Editorの表示
-
-`config/circa50.json` に基板準拠の表示レイアウトを定義しています。
-同名の `circa50.keymap` と組み合わせて読み込みます。
-JSONの配列順は47個のbindings順に対応し、`row` / `col` はテキスト整形用です（GPIO行列番号ではありません）。
-`x` / `y` / `w` は1uを17mmとして、PCBのスイッチ中心と指定済みのキー幅から定義しています。
-SW7=1.25u、SW13=1.75u、SW32=1.75u、SW38=1.25u、SW49=1.5uです。
-GitHub反映後はKeymap Editorを再読み込みし、対象リポジトリとkeymapを選び直してください。
-このJSONは表示専用で、ファームウェアのGPIO・行列変換・キー動作を変更しません。
-
-### キー割り当て
-
-提示されたKLEを基本にしています。空欄・Meta等の用途未指定箇所は次の仮割り当てです。
-`config/circa50.keymap` で変更できます。OSの配列はUS配列を想定しています。
-
-```text
-Tab Q W E R T Esc       Y U I O P Del
-Ctrl A S D F G          Tab H J K L Enter
-Shift Z X C V B         B N M , . Fn
-GUI Alt Space RAlt Sys  Space Enter Backspace Click-L Click-R
-```
-
-- SW45 = Esc、SW46 = Tab、SW44 = Sys、SW49 = Space。
-- 左親指のSW18 = GUI、SW19 = Alt、SW20 = Space、SW21 = RAlt。
-- 右親指のSW41 / SW42 = マウス左 / 右クリック。
-- Fn（SW38）を押している間：数字・記号・F1〜F12・矢印・ページ移動。
-- Sys（SW44）を押している間：Q/W/E/R/TでBluetoothスロット0〜4、YでUSB出力、UでBluetooth出力。
-- **Sys + Delは選択中Bluetoothスロットの登録解除**です。
-- Sys + N/M/,/. は前曲/再生停止/次曲/ミュート、Sys + 右親指のクリック2キーは音量下/上。
-- Sys + SW49 はマウス中クリック。
-- ディープスリープは15分。復帰はまずキーを押してください。
-
-## 配線（nRF GPIO番号）
-
-| 信号 | 左 `Left-XiaoPlus1` | 右 `U1` |
+| 信号 | 左 | 右 |
 |---|---|---|
 | Col0 | P0.02 | P0.02 |
 | Col1 | P0.03 | P0.03 |
@@ -128,49 +118,39 @@ GUI Alt Space RAlt Sys  Space Enter Backspace Click-L Click-R
 | Row2 | P1.05 | P1.13 |
 | Row3 | P1.03 | P1.14 |
 
-ダイオードは列→スイッチ→A→K→行なので `col2row` です。
-通常版XIAOの端子だけでは左側配線を接続できません。Plusの追加端子を使用します。
+- ダイオード方向は `col2row` です。
+- 左側は XIAO nRF52840 Plus の追加端子を使用するため、通常版の XIAO では動作しません。
 
-右FFC J1は1:GND、2:MOTION(P1.15)、3:SDIO(P1.07)、4:CS(P1.05)、5:SCLK(P1.03)、6:3.3Vです。
-PAW3222側J2と1対1で接続してください。5Vは接続しないでください。
-SDIOはドライバ作者の設定例に従いMOSI/MISOを同じP1.07に割り当てています。
-電源制御GPIOは実配線に存在しないため設定していません。
+### トラックボール（右側 FFC コネクタ）
 
-物理的な各行で左から右へ並べたSW番号（キーマップの順序）:
+| ピン | 信号 | GPIO |
+|---|---|---|
+| 1 | GND | — |
+| 2 | MOTION | P1.15 |
+| 3 | SDIO | P1.07 |
+| 4 | CS | P1.05 |
+| 5 | SCLK | P1.03 |
+| 6 | 3.3V | — |
 
-```text
-1 2 3 4 5 6 45       | 22 23 24 25 26 27
-7 8 9 10 11 12      | 46 28 29 30 31 32
-13 14 15 16 17 43   | 33 34 35 36 37 38
-18 19 20 21 44      | 49 39 40 41 42
-```
+センサー基板とはピン番号どうしが1対1になるよう接続してください。5Vは接続しないでください。
+センサーの軸方向が合わない場合は、右側 overlay の設定で調整してください。
 
-SW45は上段にありますが電気的には左Row3/Col5です。
-SW46は右Row1/Col5、SW49は右Row3/Col4で、見た目から行列を推定すると誤ります。
+## 設定の検証
 
-## 検証スクリプト
-
-設定単独の検証（Python標準ライブラリのみ）:
+設定ファイルどうしの整合性（キー数、配列、GPIO割り当てなど）を確認するスクリプトです。
+Python 標準ライブラリのみで動作します。
 
 ```sh
 python scripts/validate.py
 ```
 
-元PCBまで含める場合、KiCad付属Pythonで実行します（読み取りのみ）:
+## 使用しているソフトウェア
 
-```powershell
-& 'C:\Program Files\KiCad\10.0\bin\python.exe' scripts/validate.py --pcb 'D:\OneDrive - スタッフマーケティング株式会社\KiCad\AroundForty\V3\Circa40_Plus\Circa40_Plus.kicad_pcb' --netlist "$env:TEMP\circa50-firmware.xml"
-```
+- [ZMK Firmware](https://github.com/zmkfirmware/zmk)
+- [zmk-driver-paw3222](https://github.com/sekigon-gonnoc/zmk-driver-paw3222)
 
-XMLは `kicad-cli sch export netlist --format kicadxml` によるトップ回路図の出力です。
-PCBのGPIO・ダイオード・全キーマップ位置を確認し、XML指定時は回路図のMCU接続も照合します。
-この検証はビルドや実機テストの代わりにはなりません。
+バージョンは [`config/west.yml`](config/west.yml) で固定しています。
 
-## 参照・固定バージョン
+## ライセンス
 
-- [ZMK](https://github.com/zmkfirmware/zmk)：`9ebbeff0a8b69a42f14aec022cdf16c7a107b9e0`
-- [PAW3222ドライバ](https://github.com/sekigon-gonnoc/zmk-driver-paw3222)：`df652881be2520bde4f64ab6ca35e4c5708f4f9b`
-- [ZMKのポインティングデバイス設定](https://zmk.dev/docs/hardware-integration/pointing)
-
-元PCBのSHA-256（作成時）:
-`CA10D04B0719323029F035691D8F4EBE18BF031D9C243115CC9CE4F19E290FEC`
+[MIT License](LICENSE)
