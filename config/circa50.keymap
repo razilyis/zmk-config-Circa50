@@ -80,10 +80,10 @@
             // systemレイヤーのMCLKはそのまま残しているため、手動アクセスも従来通り可能。
 
             bindings = <
-&trans  &trans  &trans  &trans  &trans  &trans  &trans            &trans  &trans     &trans     &trans     &trans  &trans
-&trans  &trans  &trans  &trans  &trans  &trans            &trans  &trans  &mkp LCLK  &mkp MCLK  &mkp RCLK  &trans
-&trans  &trans  &trans  &trans  &trans  &trans            &trans  &trans  &trans     &trans     &trans     &trans
-        &trans  &trans  &trans  &trans  &trans            &trans  &trans  &trans     &trans     &trans
+&trans  &trans  &trans  &trans  &trans     &trans     &trans            &trans  &trans     &trans     &trans     &trans  &trans
+&trans  &trans  &trans  &trans  &mkp LCLK  &mkp RCLK            &trans  &trans  &mkp LCLK  &mkp MCLK  &mkp RCLK  &trans
+&trans  &trans  &trans  &trans  &trans     &trans               &trans  &trans  &trans     &trans     &trans     &trans
+        &trans  &trans  &trans  &trans     &trans               &trans  &trans  &trans     &trans     &trans
             >;
         };
 
