@@ -1,9 +1,9 @@
 {
-  "id": "circa40plus",
-  "name": "Circa40 Plus",
+  "id": "circa50",
+  "name": "Circa50",
   "layouts": {
     "default_layout": {
-      "name": "Circa40 Plus (17 mm pitch)",
+      "name": "Circa50 (17 mm pitch)",
       "layout": [
         { "label":  "SW1", "row": 0, "col":  0, "x":     0, "y": 0 },
         { "label":  "SW2", "row": 0, "col":  1, "x":     1, "y": 0 },

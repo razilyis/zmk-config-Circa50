@@ -1,4 +1,4 @@
-name: Build Circa40 Plus
+name: Build Circa50
 on: [push, pull_request, workflow_dispatch]
 
 permissions:

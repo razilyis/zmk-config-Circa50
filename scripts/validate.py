@@ -6,7 +6,7 @@ import re
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
-SHIELD = ROOT / "config/boards/shields/circa40plus"
+SHIELD = ROOT / "config/boards/shields/circa50"
 ORDER = [1, 2, 3, 4, 5, 6, 45, 22, 23, 24, 25, 26, 27,
          7, 8, 9, 10, 11, 12, 46, 28, 29, 30, 31, 32,
          13, 14, 15, 16, 17, 43, 33, 34, 35, 36, 37, 38,
@@ -30,7 +30,7 @@ def main():
     parser.add_argument("--pcb", type=Path)
     parser.add_argument("--netlist", type=Path)
     args = parser.parse_args()
-    common = text(SHIELD / "circa40plus.dtsi")
+    common = text(SHIELD / "circa50.dtsi")
     transform = [tuple(map(int, p)) for p in re.findall(r"RC\((\d+),\s*(\d+)\)", common)]
     assert len(transform) == len(set(transform)) == len(ORDER) == 47
     assert all(0 <= r < 4 and 0 <= c < 12 for r, c in transform)
@@ -39,7 +39,7 @@ def main():
     assert (3, 11) not in transform
     assert 'diode-direction = "col2row"' in common
 
-    layout = json.loads(text(ROOT / "config/circa40plus.json"))["layouts"]["default_layout"]["layout"]
+    layout = json.loads(text(ROOT / "config/circa50.json"))["layouts"]["default_layout"]["layout"]
     assert [key["label"] for key in layout] == [f"SW{n}" for n in ORDER]
     assert len({(key["row"], key["col"]) for key in layout}) == 47
     assert layout == sorted(layout, key=lambda key: (key["row"], key["col"]))
@@ -52,20 +52,20 @@ def main():
                         min(a["y"] + 1, b["y"] + 1) > max(a["y"], b["y"])), (a, b)
     print("PASS: editor layout has 47 ordered keys, correct widths and no overlaps")
 
-    keymap = text(ROOT / "config/circa40plus.keymap")
+    keymap = text(ROOT / "config/circa50.keymap")
     layers = re.findall(r"bindings\s*=\s*<([^>]+)>;", keymap)
     assert len(layers) == 3
     for layer in layers:
         assert len(re.findall(r"&\w+", layer)) == 47
     for side, name in [("L", "left"), ("R", "right")]:
-        overlay = text(SHIELD / f"circa40plus_{name}.overlay")
+        overlay = text(SHIELD / f"circa50_{name}.overlay")
         for kind in ["row", "col"]:
             prop = re.search(rf"{kind}-gpios\s*=([^;]+);", overlay).group(1)
             actual = [tuple(map(int, p)) for p in re.findall(r"&gpio(\d)\s+(\d+)", prop)]
             assert actual == PINS[side][kind], (side, kind, actual)
         gpios = PINS[side]["row"] + PINS[side]["col"]
         assert len(set(gpios)) == 10
-    right = text(SHIELD / "circa40plus_right.overlay")
+    right = text(SHIELD / "circa50_right.overlay")
     assert "col-offset = <6>" in right
     assert "<&gpio1 5 GPIO_ACTIVE_LOW>" in right
     assert "<&gpio1 15 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>" in right

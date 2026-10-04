@@ -1,4 +1,4 @@
-#include "circa40plus.dtsi"
+#include "circa50.dtsi"
 
 &kscan0 {
     // Left-XiaoPlus1 pads 17, 23, 22, 21: Row0..3_L.

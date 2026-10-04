@@ -1,14 +1,14 @@
-if SHIELD_CIRCA40PLUS_LEFT || SHIELD_CIRCA40PLUS_RIGHT
+if SHIELD_CIRCA50_LEFT || SHIELD_CIRCA50_RIGHT
 
 config ZMK_KEYBOARD_NAME
-    default "Circa40 Plus"
+    default "Circa50"
 
 config ZMK_SPLIT
     default y
 
 endif
 
-if SHIELD_CIRCA40PLUS_RIGHT
+if SHIELD_CIRCA50_RIGHT
 
 config ZMK_SPLIT_ROLE_CENTRAL
     default y

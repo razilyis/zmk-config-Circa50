@@ -1,20 +1,20 @@
 include:
   - board: xiao_ble//zmk
-    shield: circa40plus_left
-    artifact-name: Circa40plus-left
+    shield: circa50_left
+    artifact-name: Circa50-left
   - board: xiao_ble//zmk
-    shield: circa40plus_right
-    artifact-name: Circa40plus-right
+    shield: circa50_right
+    artifact-name: Circa50-right
   - board: xiao_ble//zmk
     shield: settings_reset
-    artifact-name: Circa40plus-settings-reset
+    artifact-name: Circa50-settings-reset
   - board: xiao_ble//zmk
-    shield: circa40plus_left
+    shield: circa50_left
     snippet: zmk-usb-logging
     cmake-args: -DCONFIG_ZMK_LOG_LEVEL_DBG=y -DCONFIG_ZMK_SLEEP=n -DCONFIG_LOG_BUFFER_SIZE=16384 -DCONFIG_LOG_PROCESS_THREAD_STARTUP_DELAY_MS=8000
-    artifact-name: Circa40plus-left-usb-logging
+    artifact-name: Circa50-left-usb-logging
   - board: xiao_ble//zmk
-    shield: circa40plus_right
+    shield: circa50_right
     snippet: zmk-usb-logging
     cmake-args: -DCONFIG_ZMK_LOG_LEVEL_DBG=y -DCONFIG_ZMK_SLEEP=n -DCONFIG_LOG_BUFFER_SIZE=16384 -DCONFIG_LOG_PROCESS_THREAD_STARTUP_DELAY_MS=8000
-    artifact-name: Circa40plus-right-usb-logging
+    artifact-name: Circa50-right-usb-logging

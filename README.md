@@ -1,6 +1,6 @@
-# Circa40 Plus — ZMK config
+# Circa50 — ZMK config
 
-Circa40 Plus専用のZMK設定です。KiCadデータは変更していません。
+Circa50専用のZMK設定です。KiCadデータは変更していません。
 
 ## 構成
 
@@ -22,15 +22,15 @@ GitHub Actionsを実行してから書き込んでください。GitHubへのア
 ## ビルドと書き込み
 
 1. このディレクトリの内容をGitHubのリポジトリ直下に配置します（親ディレクトリで包まない）。
-2. Actionsの `Build Circa40 Plus` を実行します。
+2. Actionsの `Build Circa50` を実行します。
 3. 成功後、Artifactsの `firmware` をダウンロードします。
 4. XIAOのリセットを素早く2回押してUF2ドライブを表示します。
-5. 左に `Circa40plus-left.uf2`、右に `Circa40plus-right.uf2` をコピーします。
+5. 左に `Circa50-left.uf2`、右に `Circa50-right.uf2` をコピーします。
 
 左右を同じ設定バージョンで書き込んでください。
-左右ペアリングが不調な場合のみ、`Circa40plus-settings-reset.uf2` を**左右両方**に書き込み、
+左右ペアリングが不調な場合のみ、`Circa50-settings-reset.uf2` を**左右両方**に書き込み、
 その後それぞれの通常ファームウェアを書き直します。設定リセットはペアリング情報等を消去します。
-PC側の古い登録も削除して、右側の `Circa40 Plus` を再登録します。
+PC側の古い登録も削除して、右側の `Circa50` を再登録します。
 
 既存のLinux / WSL / Docker等のZMKビルド環境では、このリポジトリ直下で次を実行します。
 
@@ -38,16 +38,16 @@ PC側の古い登録も削除して、右側の `Circa40 Plus` を再登録し�
 west init -l config
 west update
 west zephyr-export
-west build -s zmk/app -d build/left -b xiao_ble//zmk -- -DZMK_CONFIG="$PWD/config" -DSHIELD=circa40plus_left
-west build -s zmk/app -d build/right -b xiao_ble//zmk -- -DZMK_CONFIG="$PWD/config" -DSHIELD=circa40plus_right
+west build -s zmk/app -d build/left -b xiao_ble//zmk -- -DZMK_CONFIG="$PWD/config" -DSHIELD=circa50_left
+west build -s zmk/app -d build/right -b xiao_ble//zmk -- -DZMK_CONFIG="$PWD/config" -DSHIELD=circa50_right
 ```
 
 ## USBログ版（診断用）
 
 通常版・settings-reset版に加えて、同じActionsで次の2つを生成します。
 
-- `Circa40plus-left-usb-logging.uf2`：左側のキー走査・左右間通信のログ。
-- `Circa40plus-right-usb-logging.uf2`：右側のキー走査・接続状態・PAW3222のエラーや移動量のログ。
+- `Circa50-left-usb-logging.uf2`：左側のキー走査・左右間通信のログ。
+- `Circa50-right-usb-logging.uf2`：右側のキー走査・接続状態・PAW3222のエラーや移動量のログ。
 
 通常版と同じGPIO・キーマップ・ペアリング領域を使います。ログ版だけ、公式の
 `zmk-usb-logging` snippet、ZMK DEBUGレベル、16KiBログバッファ、出力開始8秒遅延、
@@ -83,8 +83,8 @@ MCUディープスリープ無効を指定しています。PAW3222ドライバ�
 
 ### Keymap Editorの表示
 
-`config/circa40plus.json` に基板準拠の表示レイアウトを定義しています。
-同名の `circa40plus.keymap` と組み合わせて読み込みます。
+`config/circa50.json` に基板準拠の表示レイアウトを定義しています。
+同名の `circa50.keymap` と組み合わせて読み込みます。
 JSONの配列順は47個のbindings順に対応し、`row` / `col` はテキスト整形用です（GPIO行列番号ではありません）。
 `x` / `y` / `w` は1uを17mmとして、PCBのスイッチ中心と指定済みのキー幅から定義しています。
 SW7=1.25u、SW13=1.75u、SW32=1.75u、SW38=1.25u、SW49=1.5uです。
@@ -94,7 +94,7 @@ GitHub反映後はKeymap Editorを再読み込みし、対象リポジトリとk
 ### キー割り当て
 
 提示されたKLEを基本にしています。空欄・Meta等の用途未指定箇所は次の仮割り当てです。
-`config/circa40plus.keymap` で変更できます。OSの配列はUS配列を想定しています。
+`config/circa50.keymap` で変更できます。OSの配列はUS配列を想定しています。
 
 ```text
 Tab Q W E R T Esc       Y U I O P Del
@@ -159,7 +159,7 @@ python scripts/validate.py
 元PCBまで含める場合、KiCad付属Pythonで実行します（読み取りのみ）:
 
 ```powershell
-& 'C:\Program Files\KiCad\10.0\bin\python.exe' scripts/validate.py --pcb 'D:\OneDrive - スタッフマーケティング株式会社\KiCad\AroundForty\V3\Circa40_Plus\Circa40_Plus.kicad_pcb' --netlist "$env:TEMP\circa40plus-firmware.xml"
+& 'C:\Program Files\KiCad\10.0\bin\python.exe' scripts/validate.py --pcb 'D:\OneDrive - スタッフマーケティング株式会社\KiCad\AroundForty\V3\Circa40_Plus\Circa40_Plus.kicad_pcb' --netlist "$env:TEMP\circa50-firmware.xml"
 ```
 
 XMLは `kicad-cli sch export netlist --format kicadxml` によるトップ回路図の出力です。

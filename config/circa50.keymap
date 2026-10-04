@@ -75,7 +75,7 @@
             label = "Mouse";
 
             // Auto Mouse Layer 用: trackball_listener の zip_temp_layer から
-            // ボール移動時に自動でこのレイヤーへ入る（circa40plus_right.overlay 参照）。
+            // ボール移動時に自動でこのレイヤーへ入る（circa50_right.overlay 参照）。
             // J/K/L (position 21/22/23) にクリックを配置。ベースの LCLK/RCLK・
             // systemレイヤーのMCLKはそのまま残しているため、手動アクセスも従来通り可能。
 
