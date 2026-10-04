@@ -56,6 +56,9 @@ def main():
     # combos も bindings を持つため、keymap ノード以降のレイヤーだけを数える。
     layers = re.findall(r"bindings\s*=\s*<([^>]+)>;", keymap.split('"zmk,keymap"', 1)[1])
     assert layers
+    # Keymap Editor でレイヤー順が変わると overlay のレイヤー番号がずれるため照合する。
+    layer_names = re.findall(r"(\w+)\s*\{", keymap.split('"zmk,keymap"', 1)[1])
+    assert len(layer_names) == len(layers), layer_names
     for layer in layers:
         assert len(re.findall(r"&\w+", layer)) == 47
     for side, name in [("L", "left"), ("R", "right")]:
@@ -73,6 +76,11 @@ def main():
     assert "NRF_PSEL(SPIM_SCK, 1, 3)" in right
     assert "NRF_PSEL(SPIM_MOSI, 1, 7)" in right and "NRF_PSEL(SPIM_MISO, 1, 7)" in right
     assert not set(PINS["R"]["row"] + PINS["R"]["col"]) & {(1, 3), (1, 5), (1, 7), (1, 15)}
+    aml = int(re.search(r"&zip_temp_layer\s+(\d+)", right).group(1))
+    assert layer_names[aml] == "mouse", f"auto mouse layer {aml} is {layer_names[aml]}, expected mouse"
+    scroll = int(re.search(r"scroller\s*\{\s*layers\s*=\s*<(\d+)>", right).group(1))
+    assert scroll < len(layers), scroll
+    print(f"PASS: auto mouse layer {aml} = mouse, scroll layer {scroll} = {layer_names[scroll]}")
     print(f"PASS: 47 unique matrix positions, {len(layers)} x 47 bindings, GPIOs, sensor pins")
 
     if args.pcb:

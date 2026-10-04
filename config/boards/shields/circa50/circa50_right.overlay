@@ -1,6 +1,7 @@
 #include "circa50.dtsi"
 #include <zephyr/dt-bindings/pinctrl/nrf-pinctrl.h>
 #include <input/processors.dtsi>
+#include <dt-bindings/zmk/input_transform.h>
 
 &default_transform { col-offset = <6>; };
 
@@ -61,7 +62,7 @@
 /* デフォルトの zip_temp_layer ノードを拡張:
  * - require-prior-idle-ms: 直前のキー入力から 150ms 以上経っていないと
  *   AML を発動させない（タイプ中に手のひらがボールへ軽く触れた程度の誤発動を防ぐ）。
- * - excluded-positions: mouse レイヤー (circa50.keymap の4番目 = レイヤー3) の
+ * - excluded-positions: mouse レイヤー (circa50.keymap の5番目 = レイヤー4) の
  *   LCLK(21) / MCLK(22) / RCLK(23) の位置。この3キー以外が押されたらタイムアウト前でも
  *   即座にAML終了、この3キー（クリック自身）を押してもAMLは維持される。
  *   位置番号は circa50.dtsi の matrix-transform 順（0始まり、行ごとに連番）。 */
@@ -75,11 +76,23 @@
         compatible = "zmk,input-listener";
         device = <&trackball>;
 
-        /* Auto Mouse Layer: ボールが動いた瞬間に mouse レイヤー(3, LCLK/MCLK/RCLK)を
+        /* Auto Mouse Layer: ボールが動いた瞬間に mouse レイヤー(4, LCLK/MCLK/RCLK)を
          * 自動オンにし、動きが無くなってから 500ms 後に自動オフに戻す。
          * ベースの LCLK/RCLK・systemレイヤーのMCLKはそのまま残しているので、
          * 従来通りの手動アクセスと併用可能。タイミングが合わなければ
-         * 500 の数値だけ調整する（大きいほど戻るまで長く留まる）。 */
-        input-processors = <&zip_temp_layer 3 500>;
+         * 500 の数値だけ調整する（大きいほど戻るまで長く留まる）。
+         * keymap のレイヤー順を変えたら、この番号も合わせて変更すること。 */
+        input-processors = <&zip_temp_layer 4 500>;
+
+        /* スクロールレイヤー: レイヤー1 (Common) が有効な間はボールの移動をスクロールに変換する。
+         * このオーバーライドが適用中は上の AML は発動しない。
+         * - Y_INVERT: ボールを奥へ転がすと上スクロール（マウスホイールと同じ向き）。
+         * - zip_scroll_scaler 1 16: 速度を 1/16 に。速すぎ/遅すぎなら 16 を増減する。 */
+        scroller {
+            layers = <1>;
+            input-processors = <&zip_xy_to_scroll_mapper>,
+                               <&zip_scroll_transform INPUT_TRANSFORM_Y_INVERT>,
+                               <&zip_scroll_scaler 1 16>;
+        };
     };
 };
